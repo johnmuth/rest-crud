@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+
+  web:
+    build: .
+    environment:
+      DB_HOST: user-db
+      DB_PASSWORD: userdb123
+      DB_USER: userdbuser
+      DB_NAME: userdb
+      NODE_ENV: dev
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    links:
+      - user-db
+    volumes:
+      - './server.js:/usr/src/app/server.js'
+      - './public:/usr/src/app/public'
+      - './views:/usr/src/app/views'
+      - '/usr/src/app/node_modules'
+    command: ["npm", "run", "start"]
+
+  user-db:
+    image: mysql/mysql-server:5.7
+    volumes:
+      - "./.data/user-db:/var/lib/mysql"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql123
+      MYSQL_DATABASE: userdb
+      MYSQL_USER: userdbuser
+      MYSQL_PASSWORD: userdb123
+    ports:
+      - "3306:3306"
+
+  db-migrate:
+    build:
+      context: db-migrate
+    environment:
+      DB_HOST: user-db
+      DB_USER: userdbuser
+      DB_PASSWORD: userdb123
+    links:
+      - user-db
+    volumes:
+      - "./db-migrate/migrations:/db-migrate/migrations"
+      - "./db-migrate/database.json:/db-migrate/database.json"
+
+  start_dependencies:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - user-db
+    command: user-db:3306

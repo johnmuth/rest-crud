@@ -21,10 +21,10 @@ var connection  = require('express-myconnection'),
 app.use(
 
     connection(mysql,{
-        host     : 'localhost',
-        user     : 'root',
-        password : '',
-        database : 'test',
+        host     : process.env.DB_HOST,
+        user     : process.env.DB_USER,
+        password : process.env.DB_PASSWORD,
+        database : process.env.DB_NAME,
         debug    : false //set true if you wanna see debug logger
     },'request')
 
@@ -231,8 +231,7 @@ curut2.delete(function(req,res,next){
 app.use('/api', router);
 
 //start Server
-var server = app.listen(3000,function(){
-
-   console.log("Listening to port %s",server.address().port);
-
+app.set('port', (process.env.PORT || 3001));
+var server = app.listen(app.get('port'),function(){
+    console.log(`Find the server at: http://localhost:${app.get('port')}/api/user`); // eslint-disable-line no-console
 });
